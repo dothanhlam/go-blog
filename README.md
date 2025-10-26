@@ -16,11 +16,12 @@ This is a blog application built with Go, Echo, PostgreSQL, and deployed on AWS.
     -   **Without Docker:** Useful for faster iteration during development. You will need to run your own PostgreSQL instance.
 
 2.  **Run with Docker:**
-    Use Docker Compose to build and run the application and the database.
+    Use Docker Compose to build and run the application and the database. This setup includes `air` for automatic hot-reloading when you change a file.
 
     ```bash
     docker-compose up --build
     ```
+    The first time you run this, it will install `air`. Subsequent runs will be faster.
 
 3.  **Run Migrations:**
     You will need a migration tool like `golang-migrate/migrate` to run the SQL migrations against the database.
@@ -40,11 +41,18 @@ This is a blog application built with Go, Echo, PostgreSQL, and deployed on AWS.
     ```
     Update the `DATABASE_URL` in `.env` if your local PostgreSQL setup is different.
 
-    c. **Run Migrations:** Run the migrations against your local database.
-
-    d. **Run the Application:**
+    c. **Install `air`:** Install the `air` tool on your local machine.
     ```bash
-    go run ./cmd/server/main.go
+    go install github.com/cosmtrek/air@latest
+    ```
+
+    d. **Run Migrations & Start the App:** Run the migrations and then start the application using `air`.
+    ```bash
+    # First, run migrations (only needed once or when schema changes)
+    migrate -path migrations -database "postgres://user:password@localhost:5432/blog?sslmode=disable" up
+
+    # Then, run the app with hot-reloading
+    air
     ```
 
 The application will be available at `http://localhost:8080`.

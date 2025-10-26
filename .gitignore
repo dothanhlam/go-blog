@@ -17,3 +17,12 @@
 .env
 /go-blog-server
 go.sum
+
+# Air auto-reload tool
+/tmp
+air.log
+/go-blog-server
+go.sum
+
+/files
+/uploads

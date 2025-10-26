@@ -47,9 +47,34 @@ func (s *PostStore) GetByID(id int) (*model.Post, error) {
 }
 
 func (s *PostStore) List(limit, offset int) ([]*model.Post, error) {
-	// Implementation for listing posts with pagination
-	// TODO: Implement this method.
-	return nil, nil
+	query := `
+		SELECT id, user_id, title, content_path, version, created_at, updated_at 
+		FROM posts 
+		ORDER BY created_at DESC 
+		LIMIT $1 OFFSET $2`
+
+	rows, err := s.db.Query(query, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var posts []*model.Post
+	for rows.Next() {
+		post := &model.Post{}
+		if err := rows.Scan(
+			&post.ID, &post.UserID, &post.Title, &post.ContentPath,
+			&post.Version, &post.CreatedAt, &post.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		posts = append(posts, post)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return posts, nil
 }
 
 func (s *PostStore) CreateHistory(history *model.PostHistory) error {

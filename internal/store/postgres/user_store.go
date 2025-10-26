@@ -42,5 +42,6 @@ func (s *UserStore) GetByEmail(email string) (*model.User, error) {
 
 func (s *UserStore) GetByID(id int) (*model.User, error) {
 	// Implementation for getting a user by ID
+	// This is a placeholder; actual implementation would query the database.
 	return nil, nil
 }

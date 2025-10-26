@@ -25,9 +25,14 @@ services:
     restart: on-failure
     ports:
       - "8080:8080"
+    # Mount the source code into the container
+    volumes:
+      - .:/app
     depends_on:
       db:
         condition: service_healthy
+    # Override the Dockerfile's CMD to install and run air for development
+    command: sh -c "go install github.com/cosmtrek/air@latest && air"
     environment:
       - SERVER_PORT=8080
       - DATABASE_URL=postgres://user:password@db:5432/blog?sslmode=disable
