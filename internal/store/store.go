@@ -17,4 +17,5 @@ type PostStore interface {
 	GetByID(id int) (*model.Post, error)
 	List(limit, offset int) ([]*model.Post, error)
 	CreateHistory(history *model.PostHistory) error
+	Search(query string, limit, offset int) ([]*model.Post, error)
 }

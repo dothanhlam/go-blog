@@ -105,3 +105,25 @@ func (h *PostHandler) ListPosts(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, posts)
 }
+
+func (h *PostHandler) SearchPosts(c echo.Context) error {
+	query := c.QueryParam("q")
+	if query == "" {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Search query 'q' is required"})
+	}
+
+	page, _ := strconv.Atoi(c.QueryParam("page"))
+	limit, _ := strconv.Atoi(c.QueryParam("limit"))
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 10
+	}
+
+	posts, err := h.postService.Search(query, page, limit)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+	return c.JSON(http.StatusOK, posts)
+}

@@ -12,6 +12,7 @@ type PostService interface {
 	GetByID(id int) (*model.Post, string, error)
 	List(page, limit int) ([]*model.Post, error)
 	Update(postID int, title, content string, userID int) (*model.Post, error)
+	Search(query string, page, limit int) ([]*model.Post, error)
 }
 
 type postService struct {
@@ -69,6 +70,11 @@ func (s *postService) GetByID(id int) (*model.Post, string, error) {
 func (s *postService) List(page, limit int) ([]*model.Post, error) {
 	offset := (page - 1) * limit
 	return s.postStore.List(limit, offset)
+}
+
+func (s *postService) Search(query string, page, limit int) ([]*model.Post, error) {
+	offset := (page - 1) * limit
+	return s.postStore.Search(query, limit, offset)
 }
 
 func (s *postService) Update(postID int, title, content string, userID int) (*model.Post, error) {

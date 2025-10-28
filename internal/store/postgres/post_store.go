@@ -82,3 +82,34 @@ func (s *PostStore) CreateHistory(history *model.PostHistory) error {
 	_, err := s.db.Exec(query, history.PostID, history.Version, history.ContentPath)
 	return err
 }
+
+func (s *PostStore) Search(query string, limit, offset int) ([]*model.Post, error) {
+	// plainto_tsquery is used for user-provided search terms.
+	// It's safer and handles multiple words well.
+	sqlQuery := `
+		SELECT id, user_id, title, content_path, version, created_at, updated_at
+		FROM posts
+		WHERE title_tsv @@ plainto_tsquery('english', $1)
+		ORDER BY ts_rank(title_tsv, plainto_tsquery('english', $1)) DESC
+		LIMIT $2 OFFSET $3`
+
+	rows, err := s.db.Query(sqlQuery, query, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var posts []*model.Post
+	for rows.Next() {
+		post := &model.Post{}
+		if err := rows.Scan(
+			&post.ID, &post.UserID, &post.Title, &post.ContentPath,
+			&post.Version, &post.CreatedAt, &post.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		posts = append(posts, post)
+	}
+
+	return posts, rows.Err()
+}

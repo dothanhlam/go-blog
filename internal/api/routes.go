@@ -23,6 +23,7 @@ func RegisterRoutes(e *echo.Echo, userService service.UserService, postService s
 	// Post routes
 	apiGroup.GET("/posts", postHandler.ListPosts) // Publicly accessible list of posts
 	apiGroup.GET("/posts/:id", postHandler.GetPost)
+	apiGroup.GET("/posts/search", postHandler.SearchPosts)
 
 	// Authenticated routes
 	authGroup := apiGroup.Group("")
