@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 
 	"go-blog/internal/api"
+	"go-blog/internal/web"
 	"go-blog/internal/config"
 	"go-blog/internal/service"
 	"go-blog/internal/store/postgres"
@@ -45,6 +46,11 @@ func main() {
 	e.Validator = api.NewValidator()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+
+	e.Renderer = web.NewTemplateRenderer()
+    webHandler := api.NewWebHandler(postService)
+    e.GET("/posts/:id", webHandler.RenderPostPage)
+    e.GET("/", webHandler.RenderIndexPage)
 
 	// Register routes
 	api.RegisterRoutes(e, userService, postService, cfg)

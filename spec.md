@@ -10,7 +10,7 @@ as engineering manager, manage the team using go and echo framework, postgresSQL
 
 4. We want to track the changes and history on each post
 
-The project structure
+5. The project structure
 ├── cmd/server/
 │   └── main.go                 # Main application entry point
 ├── internal/
@@ -44,3 +44,5 @@ The project structure
 ├── docker-compose.yml          # For local development (app + postgres)
 ├── go.mod
 └── README.md                   # Project overview and setup
+
+6. SSR (Server-Side Rendering): Our main Go (Echo) app fetches the data, renders the Markdown to HTML, and serves a complete web page.
