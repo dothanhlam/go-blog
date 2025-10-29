@@ -7,11 +7,13 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 
 	"go-blog/internal/api"
-	"go-blog/internal/web"
 	"go-blog/internal/config"
+	i18nmiddleware "go-blog/internal/middleware"
 	"go-blog/internal/service"
 	"go-blog/internal/store/postgres"
 	"go-blog/internal/storage"
+	"go-blog/internal/web"
+	"golang.org/x/text/language"
 )
 
 func main() {
@@ -46,6 +48,7 @@ func main() {
 	e.Validator = api.NewValidator()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.Use(i18nmiddleware.I18n(language.English))
 
 	e.Renderer = web.NewTemplateRenderer()
     webHandler := api.NewWebHandler(postService)

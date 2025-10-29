@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"go-blog/internal/service"
 	"html/template"
 	"net/http"
@@ -40,7 +41,8 @@ func (h *WebHandler) RenderIndexPage(c echo.Context) error {
 	}
 
 	return c.Render(http.StatusOK, "index.html", map[string]interface{}{
-		"Posts": posts,
+		"Context": c,
+		"Posts":   posts,
 	})
 }
 
@@ -53,16 +55,25 @@ func (h *WebHandler) RenderPostPage(c echo.Context) error {
 
 	post, mdContent, err := h.postService.GetByID(id)
 	if err != nil {
-		// Assuming service returns a specific error for not found
-		return c.String(http.StatusNotFound, "Post not found")
+		if errors.Is(err, service.ErrNotFound) {
+			// Use the localizer to return a translated "not found" message.
+			// This requires a bit more setup in the handler or a custom error handler.
+			// For now, we keep it simple.
+			return c.String(http.StatusNotFound, "post_not_found")
+		}
+		return c.String(http.StatusNotFound, "post_not_found")
 	}
 
 	// Convert markdown to HTML
 	extensions := parser.CommonExtensions | parser.AutoHeadingIDs
 	p := parser.NewWithExtensions(extensions)
 	htmlContent := markdown.ToHTML([]byte(mdContent), p, nil)
-
+	// Use html.Renderer to get more control if needed in the future.
+	// renderer := html.NewRenderer(html.RendererOptions{Flags: html.CommonFlags})
+	// htmlContent = markdown.ToHTML([]byte(mdContent), p, renderer)
+	
 	return c.Render(http.StatusOK, "post.html", map[string]interface{}{
+		"Context": c,
 		"Title":   post.Title,
 		"Content": template.HTML(htmlContent), // Use template.HTML to prevent escaping
 	})
