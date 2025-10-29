@@ -1,0 +1,4 @@
+go_blog = "Blog Lập Trình Go"
+all_posts = "Tất cả bài viết"
+no_posts_found = "Không tìm thấy bài viết nào."
+post_not_found = "Không tìm thấy bài viết"

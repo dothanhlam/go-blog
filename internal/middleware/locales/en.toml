@@ -1,0 +1,4 @@
+go_blog = "Go Blog"
+all_posts = "All Posts"
+no_posts_found = "No posts found."
+post_not_found = "Post not found"

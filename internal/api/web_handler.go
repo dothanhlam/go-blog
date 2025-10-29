@@ -2,11 +2,16 @@ package api
 
 import (
 	"errors"
+	"go-blog/internal/config"
+	"go-blog/internal/middleware" // Added this import
 	"go-blog/internal/service"
 	"html/template"
 	"net/http"
 	"strconv"
+	"time"
+	"log" // Added log import
 
+	"github.com/golang-jwt/jwt/v5" // Ensured this import is present
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/parser"
 	"github.com/labstack/echo/v4"
@@ -14,12 +19,14 @@ import (
 
 // WebHandler handles requests for server-side rendered pages.
 type WebHandler struct {
+	cfg         *config.Config
 	postService service.PostService
+	userService service.UserService
 }
 
 // NewWebHandler creates a new WebHandler.
-func NewWebHandler(ps service.PostService) *WebHandler {
-	return &WebHandler{postService: ps}
+func NewWebHandler(cfg *config.Config, ps service.PostService, us service.UserService) *WebHandler {
+	return &WebHandler{cfg: cfg, postService: ps, userService: us}
 }
 
 // RenderIndexPage renders the home page with a list of all posts.
@@ -41,6 +48,7 @@ func (h *WebHandler) RenderIndexPage(c echo.Context) error {
 	}
 
 	return c.Render(http.StatusOK, "index.html", map[string]interface{}{
+		"User":    c.Get(middleware.UserContextKey),
 		"Context": c,
 		"Posts":   posts,
 	})
@@ -72,9 +80,69 @@ func (h *WebHandler) RenderPostPage(c echo.Context) error {
 	// renderer := html.NewRenderer(html.RendererOptions{Flags: html.CommonFlags})
 	// htmlContent = markdown.ToHTML([]byte(mdContent), p, renderer)
 	
+	log.Printf("web handler ", c.Get(middleware.UserContextKey))
+	
 	return c.Render(http.StatusOK, "post.html", map[string]interface{}{
+		"User":    c.Get(middleware.UserContextKey),
 		"Context": c,
 		"Title":   post.Title,
 		"Content": template.HTML(htmlContent), // Use template.HTML to prevent escaping
 	})
+}
+
+// RenderLoginPage renders the login page.
+func (h *WebHandler) RenderLoginPage(c echo.Context) error {
+	return c.Render(http.StatusOK, "login.html", nil)
+}
+
+// HandleLogin processes the login form submission.
+func (h *WebHandler) HandleLogin(c echo.Context) error {
+	email := c.FormValue("email")
+	password := c.FormValue("password")
+
+	user, err := h.userService.Login(email, password)
+	if err != nil {
+		// In a real app, you'd render the login page again with an error message.
+		return c.Redirect(http.StatusFound, "/login?error=invalid_credentials")
+	}
+
+	// Create token
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["id"] = user.ID
+	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
+
+	// Generate encoded token
+	t, err := token.SignedString([]byte(h.cfg.JWTSecret))
+	if err != nil {
+		return c.Redirect(http.StatusFound, "/login?error=token_error")
+	}
+
+	// Set the token in a secure, http-only cookie
+	cookie := &http.Cookie{
+		Name:     "token",
+		Value:    t,
+		Expires:  time.Now().Add(time.Hour * 72),
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   false, // Set to false for local HTTP development, true for HTTPS in production
+		SameSite: http.SameSiteLaxMode,
+	}
+	c.SetCookie(cookie)
+
+	return c.Redirect(http.StatusFound, "/")
+}
+
+// HandleLogout clears the session cookie and logs the user out.
+func (h *WebHandler) HandleLogout(c echo.Context) error {
+	cookie := &http.Cookie{
+		Name:     "token",
+		Value:    "",
+		Expires:  time.Unix(0, 0), // Expire immediately
+		Path:     "/",
+		Secure:   false, // Consistent with login for local development
+		HttpOnly: true,
+	}
+	c.SetCookie(cookie)
+	return c.Redirect(http.StatusFound, "/login")
 }

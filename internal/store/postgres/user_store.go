@@ -42,6 +42,17 @@ func (s *UserStore) GetByEmail(email string) (*model.User, error) {
 
 func (s *UserStore) GetByID(id int) (*model.User, error) {
 	// Implementation for getting a user by ID
-	// This is a placeholder; actual implementation would query the database.
-	return nil, nil
+	query := `SELECT id, username, email, created_at, updated_at FROM users WHERE id = $1`
+	user := &model.User{}
+	err := s.db.QueryRow(query, id).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }

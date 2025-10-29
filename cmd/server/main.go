@@ -48,12 +48,19 @@ func main() {
 	e.Validator = api.NewValidator()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+
+	// --- Web Routes and Middleware ---
+	// The i18n middleware should come before the auth middleware
 	e.Use(i18nmiddleware.I18n(language.English))
+	e.Use(i18nmiddleware.WebAuth(userService, cfg))
 
 	e.Renderer = web.NewTemplateRenderer()
-    webHandler := api.NewWebHandler(postService)
+    webHandler := api.NewWebHandler(cfg, postService, userService)
     e.GET("/posts/:id", webHandler.RenderPostPage)
     e.GET("/", webHandler.RenderIndexPage)
+	e.GET("/login", webHandler.RenderLoginPage)
+	e.POST("/login", webHandler.HandleLogin)
+	e.GET("/logout", webHandler.HandleLogout)
 
 	// Register routes
 	api.RegisterRoutes(e, userService, postService, cfg)
