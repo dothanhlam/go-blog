@@ -109,8 +109,9 @@ func (h *WebHandler) HandleLogin(c echo.Context) error {
 	// Create token
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
+	expirationTime := time.Now().Add(time.Hour * time.Duration(h.cfg.TokenExpiresInHours))
 	claims["id"] = user.ID
-	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
+	claims["exp"] = expirationTime.Unix()
 
 	// Generate encoded token
 	t, err := token.SignedString([]byte(h.cfg.JWTSecret))
@@ -122,7 +123,7 @@ func (h *WebHandler) HandleLogin(c echo.Context) error {
 	cookie := &http.Cookie{
 		Name:     "token",
 		Value:    t,
-		Expires:  time.Now().Add(time.Hour * 72),
+		Expires:  expirationTime,
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   false, // Set to false for local HTTP development, true for HTTPS in production

@@ -10,49 +10,49 @@ This is a blog application built with Go, Echo, PostgreSQL, and deployed on AWS.
 
 ## Local Development
 
-1.  **Choose Your Method:**
+This project is configured to use `air` for live-reloading, which automatically rebuilds and restarts the application when you save a file. You can run the development environment with or without Docker.
 
-    -   **With Docker (Recommended):** The easiest way to get started. It runs the application and a PostgreSQL database.
-    -   **Without Docker:** Useful for faster iteration during development. You will need to run your own PostgreSQL instance.
+### 1. Run with Docker (Recommended)
 
-2.  **Run with Docker:**
-    Use Docker Compose to build and run the application and the database. This setup includes `air` for automatic hot-reloading when you change a file.
+The `docker-compose.yml` file is set up to run the Go application and a PostgreSQL database. The app container will automatically install and run `air`.
 
-    ```bash
-    docker-compose up --build
-    ```
-    The first time you run this, it will install `air`. Subsequent runs will be faster.
+a. **Start the services:**
+```bash
+docker-compose up --build
+```
 
-3.  **Run Migrations:**
-    You will need a migration tool like `golang-migrate/migrate` to run the SQL migrations against the database.
+b. **Run database migrations:**
+In a separate terminal, run the migrations against the Docker database. You only need to do this once or when the database schema changes.
+```bash
+# For the Docker container DB
+migrate -path migrations -database "postgres://user:password@localhost:5432/blog?sslmode=disable" up
+```
 
-    ```bash
-    # For the Docker container DB
-    migrate -path migrations -database "postgres://user:password@localhost:5432/blog?sslmode=disable" up
-    ```
+### 2. Run without Docker
 
-4.  **Run without Docker:**
+This method gives you faster build times but requires you to manage PostgreSQL and other dependencies on your local machine.
 
-    a. **Install PostgreSQL:** Make sure you have a PostgreSQL server running locally.
+a. **Install Dependencies:**
+- Make sure you have a PostgreSQL server running locally.
+- Install the `air` live-reloading tool:
+  ```bash
+  go install github.com/cosmtrek/air@latest
+  ```
 
-    b. **Set Environment Variables:** Copy the `.env.example` file to a new file named `.env`.
-    ```bash
-    cp .env.example .env
-    ```
-    Update the `DATABASE_URL` in `.env` if your local PostgreSQL setup is different.
+b. **Set Environment Variables:**
+Copy the `.env.example` file to `.env` and update the `DATABASE_URL` if your local PostgreSQL setup is different.
+```bash
+cp .env.example .env
+```
 
-    c. **Install `air`:** Install the `air` tool on your local machine.
-    ```bash
-    go install github.com/cosmtrek/air@latest
-    ```
+c. **Run Migrations & Start the App:**
+First, run the database migrations. Then, start the application using `air`.
+```bash
+# Run migrations
+migrate -path migrations -database "postgres://user:password@localhost:5432/blog?sslmode=disable" up
 
-    d. **Run Migrations & Start the App:** Run the migrations and then start the application using `air`.
-    ```bash
-    # First, run migrations (only needed once or when schema changes)
-    migrate -path migrations -database "postgres://user:password@localhost:5432/blog?sslmode=disable" up
-
-    # Then, run the app with hot-reloading
-    air
-    ```
+# Run the app with hot-reloading
+air
+```
 
 The application will be available at `http://localhost:8080`.

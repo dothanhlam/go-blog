@@ -65,7 +65,7 @@ func (h *UserHandler) Login(cfg *config.Config) echo.HandlerFunc {
 		// Set claims
 		claims := token.Claims.(jwt.MapClaims)
 		claims["id"] = user.ID
-		claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
+		claims["exp"] = time.Now().Add(time.Hour * time.Duration(cfg.TokenExpiresInHours)).Unix()
 
 		// Generate encoded token and send it as response.
 		t, err := token.SignedString([]byte(cfg.JWTSecret))

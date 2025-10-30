@@ -16,6 +16,7 @@ type Config struct {
 	S3Region     string `mapstructure:"S3_REGION"`
 	AWSAccessKey string `mapstructure:"AWS_ACCESS_KEY_ID"`
 	AWSSecretKey string `mapstructure:"AWS_SECRET_ACCESS_KEY"`
+	TokenExpiresInHours int `mapstructure:"TOKEN_EXPIRES_IN_HOURS"`
 }
 
 // Load reads configuration from environment variables.
@@ -33,6 +34,7 @@ func Load() (*Config, error) {
 	viper.SetDefault("SERVER_PORT", "8080")
 	viper.SetDefault("STORAGE_TYPE", "local")
 	viper.SetDefault("JWT_SECRET", "a-very-secret-key-that-should-be-changed")
+    viper.SetDefault("TOKEN_EXPIRES_IN_HOURS", 72)
 
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
