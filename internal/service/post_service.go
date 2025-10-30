@@ -12,6 +12,7 @@ type PostService interface {
 	Create(title, content string, userID int) (*model.Post, error)
 	GetByID(id int) (*model.Post, string, error)
 	List(page, limit int) ([]*model.Post, error)
+	CreateFromFile(title string, content []byte, userID int) (*model.Post, error)
 	Update(postID int, title, content string, userID int) (*model.Post, error)
 	Search(query string, page, limit int) ([]*model.Post, error)
 }
@@ -44,6 +45,33 @@ func (s *postService) Create(title, content string, userID int) (*model.Post, er
 
 	// Save the markdown content to the configured storage (local or S3).
 	if err := s.fileStorage.Save(contentPath, []byte(content)); err != nil {
+		// TODO: Consider rolling back the database transaction if file storage fails.
+		return nil, err
+	}
+
+	// Update the post record with the content path.
+	createdPost.ContentPath = contentPath
+	return s.postStore.Update(createdPost)
+}
+
+func (s *postService) CreateFromFile(title string, content []byte, userID int) (*model.Post, error) {
+	// Create the post metadata in the database first to get an ID.
+	post := &model.Post{
+		UserID:  userID,
+		Title:   title,
+		Version: 1,
+	}
+
+	createdPost, err := s.postStore.Create(post)
+	if err != nil {
+		return nil, err
+	}
+
+	// Use the post ID to create a unique path for the content file.
+	contentPath := fmt.Sprintf("user_%d/post_%d_v%d.md", userID, createdPost.ID, createdPost.Version)
+
+	// Save the markdown content to the configured storage.
+	if err := s.fileStorage.Save(contentPath, content); err != nil {
 		// TODO: Consider rolling back the database transaction if file storage fails.
 		return nil, err
 	}

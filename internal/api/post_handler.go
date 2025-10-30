@@ -2,6 +2,7 @@ package api
 
 import (
 	"go-blog/internal/service"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -126,4 +127,38 @@ func (h *PostHandler) SearchPosts(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 	return c.JSON(http.StatusOK, posts)
+}
+
+func (h *PostHandler) CreateFromUpload(c echo.Context) error {
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(jwt.MapClaims)
+	userID := int(claims["id"].(float64))
+
+	title := c.FormValue("title")
+	if title == "" {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "title is required"})
+	}
+
+	file, err := c.FormFile("contentFile")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "contentFile is required"})
+	}
+
+	src, err := file.Open()
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	content, err := io.ReadAll(src)
+	if err != nil {
+		return err
+	}
+
+	post, err := h.postService.CreateFromFile(title, content, userID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+
+	return c.JSON(http.StatusCreated, post)
 }
