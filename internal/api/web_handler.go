@@ -145,5 +145,5 @@ func (h *WebHandler) HandleLogout(c echo.Context) error {
 		HttpOnly: true,
 	}
 	c.SetCookie(cookie)
-	return c.Redirect(http.StatusFound, "/login")
+	return c.Redirect(http.StatusFound, "/")
 }

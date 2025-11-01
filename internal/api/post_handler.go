@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"log" // Added log import
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
@@ -133,7 +134,7 @@ func (h *PostHandler) CreateFromUpload(c echo.Context) error {
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(jwt.MapClaims)
 	userID := int(claims["id"].(float64))
-
+	log.Printf("post handler - user id  %d", userID)
 	title := c.FormValue("title")
 	if title == "" {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "title is required"})

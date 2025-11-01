@@ -32,5 +32,5 @@ func RegisterRoutes(e *echo.Echo, userService service.UserService, postService s
 	}))
 	authGroup.POST("/posts", postHandler.CreatePost)
 	authGroup.PUT("/posts/:id", postHandler.UpdatePost)
-	apiGroup.POST("/posts/upload", postHandler.CreateFromUpload)
+	authGroup.POST("/posts/upload", postHandler.CreateFromUpload)
 }
