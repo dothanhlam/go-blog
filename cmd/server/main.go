@@ -49,6 +49,10 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
+	// Serve static files
+	e.Static("/static", "internal/web/static")
+	e.Static("/assets", "internal/web/assets")
+
 	// --- Web Routes and Middleware ---
 	// The i18n middleware should come before the auth middleware
 	e.Use(i18nmiddleware.I18n(language.English))

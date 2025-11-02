@@ -11,7 +11,7 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
-//go:embed template/*.html
+//go:embed all:template
 var templatesFS embed.FS
 
 // TemplateRenderer is a custom html/template renderer for the Echo framework.
@@ -21,8 +21,8 @@ type TemplateRenderer struct {
 
 // NewTemplateRenderer creates a new TemplateRenderer.
 func NewTemplateRenderer() *TemplateRenderer {
-	// Create a template with a custom function map
-	tmpl := template.New("").Funcs(template.FuncMap{
+	// Define a function map to be used in the templates.
+	funcMap := template.FuncMap{
 		"t": func(c echo.Context, messageID string) string {
 			// The default value is the message ID itself
 			defaultValue := messageID
@@ -46,10 +46,12 @@ func NewTemplateRenderer() *TemplateRenderer {
 			}
 			return translated
 		},
-	})
+	}
 
 	return &TemplateRenderer{
-		templates: template.Must(tmpl.ParseFS(templatesFS, "template/*.html")),
+		// Parse all templates (pages and layouts) into a single template set.
+		templates: template.Must(template.New("").Funcs(funcMap).ParseFS(templatesFS,
+			"template/*.html", "template/layouts/*.html")),
 	}
 }
 

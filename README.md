@@ -1,6 +1,8 @@
 # Go Blog Application
 
 This is a blog application built with Go, Echo, PostgreSQL, and deployed on AWS.
+Theme using from [Bootstrap](https://getbootstrap.com/) and [startbootstrap-clean-blog
+](https://github.com/StartBootstrap/startbootstrap-clean-blo)
 
 ## Requirements
 
