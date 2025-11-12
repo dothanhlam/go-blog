@@ -147,3 +147,25 @@ func (h *WebHandler) HandleLogout(c echo.Context) error {
 	c.SetCookie(cookie)
 	return c.Redirect(http.StatusFound, "/")
 }
+
+// CustomHTTPErrorHandler handles HTTP errors for the web interface.
+func (h *WebHandler) CustomHTTPErrorHandler(err error, c echo.Context) {
+	code := http.StatusInternalServerError
+	if he, ok := err.(*echo.HTTPError); ok {
+		code = he.Code
+	}
+
+	// If it's a 404, render our custom 404 page
+	if code == http.StatusNotFound {
+		// We can pass the user from the context to the template,
+		// so the header/navigation still looks correct.
+		err := c.Render(http.StatusNotFound, "404.html", map[string]interface{}{
+					"Context": c,
+			"User": c.Get(middleware.UserContextKey),
+		})
+		if err != nil {
+			c.Logger().Error(err)
+		}
+		return
+	}
+}

@@ -58,10 +58,12 @@ func main() {
 	e.Use(i18nmiddleware.I18n(language.English))
 	e.Use(i18nmiddleware.WebAuth(userService, cfg))
 
+	webHandler := api.NewWebHandler(cfg, postService, userService)
+	e.HTTPErrorHandler = webHandler.CustomHTTPErrorHandler
+
 	e.Renderer = web.NewTemplateRenderer()
-    webHandler := api.NewWebHandler(cfg, postService, userService)
-    e.GET("/posts/:id", webHandler.RenderPostPage)
-    e.GET("/", webHandler.RenderIndexPage)
+	e.GET("/posts/:id", webHandler.RenderPostPage)
+	e.GET("/", webHandler.RenderIndexPage)
 	e.GET("/login", webHandler.RenderLoginPage)
 	e.POST("/login", webHandler.HandleLogin)
 	e.GET("/logout", webHandler.HandleLogout)
