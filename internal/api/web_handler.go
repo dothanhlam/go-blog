@@ -160,7 +160,7 @@ func (h *WebHandler) CustomHTTPErrorHandler(err error, c echo.Context) {
 		// We can pass the user from the context to the template,
 		// so the header/navigation still looks correct.
 		err := c.Render(http.StatusNotFound, "404.html", map[string]interface{}{
-					"Context": c,
+			"Context": c,
 			"User": c.Get(middleware.UserContextKey),
 		})
 		if err != nil {
