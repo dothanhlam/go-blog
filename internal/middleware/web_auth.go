@@ -20,7 +20,7 @@ func WebAuth(userService service.UserService, cfg *config.Config) echo.Middlewar
 			if err != nil {
 				// If there's any error getting the cookie (including http.ErrNoCookie),
 				// it means we don't have a valid token cookie to process.
-				log.Printf("WebAuth: Error getting 'token' cookie: %v\n", err) // Debug
+				// log.Printf("WebAuth: Error getting 'token' cookie: %v\n", err) // Debug
 				return next(c)
 			}
 

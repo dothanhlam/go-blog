@@ -7,6 +7,9 @@ type Post struct {
 	ID        int       `json:"id"`
 	UserID    int       `json:"user_id"`
 	Title     string    `json:"title"`
+	SubTitle  string    `json:"sub_title"`
+	Image     string    `json:"image"`
+	Tags      []string  `json:"tags"`
 	ContentPath string    `json:"-"` // Path to the markdown file in storage (local or S3)
 	Version   int       `json:"version"`
 	CreatedAt time.Time `json:"created_at"`

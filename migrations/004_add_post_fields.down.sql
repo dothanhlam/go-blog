@@ -1,0 +1,3 @@
+ALTER TABLE posts DROP COLUMN sub_title;
+ALTER TABLE posts DROP COLUMN image;
+ALTER TABLE posts DROP COLUMN tags;

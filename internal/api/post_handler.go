@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 	"log" // Added log import
 
 	"github.com/golang-jwt/jwt/v5"
@@ -20,13 +21,19 @@ func NewPostHandler(ps service.PostService) *PostHandler {
 }
 
 type CreatePostRequest struct {
-	Title   string `json:"title"`
-	Content string `json:"content"` // Markdown content
+	Title    string   `json:"title"`
+	SubTitle string   `json:"sub_title"`
+	Image    string   `json:"image"`
+	Tags     []string `json:"tags"`
+	Content  string   `json:"content"` // Markdown content
 }
 
 type UpdatePostRequest struct {
-	Title   string `json:"title"`
-	Content string `json:"content"`
+	Title    string   `json:"title"`
+	SubTitle string   `json:"sub_title"`
+	Image    string   `json:"image"`
+	Tags     []string `json:"tags"`
+	Content  string   `json:"content"`
 }
 
 func (h *PostHandler) CreatePost(c echo.Context) error {
@@ -40,7 +47,7 @@ func (h *PostHandler) CreatePost(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request"})
 	}
 
-	post, err := h.postService.Create(req.Title, req.Content, userID)
+	post, err := h.postService.Create(req.Title, req.SubTitle, req.Image, req.Tags, req.Content, userID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
@@ -64,7 +71,7 @@ func (h *PostHandler) UpdatePost(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request"})
 	}
 
-	post, err := h.postService.Update(id, req.Title, req.Content, userID)
+	post, err := h.postService.Update(id, req.Title, req.SubTitle, req.Image, req.Tags, req.Content, userID)
 	if err != nil {
 		// This could be a not found error, a permission error, or a server error
 		// A more robust error handling mechanism would be better here.
@@ -140,6 +147,17 @@ func (h *PostHandler) CreateFromUpload(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "title is required"})
 	}
 
+	subTitle := c.FormValue("sub_title")
+	image := c.FormValue("image")
+	tagsStr := c.FormValue("tags")
+	var tags []string
+	if tagsStr != "" {
+		tags = strings.Split(tagsStr, ",")
+		for i := range tags {
+			tags[i] = strings.TrimSpace(tags[i])
+		}
+	}
+
 	file, err := c.FormFile("contentFile")
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "contentFile is required"})
@@ -156,7 +174,7 @@ func (h *PostHandler) CreateFromUpload(c echo.Context) error {
 		return err
 	}
 
-	post, err := h.postService.CreateFromFile(title, content, userID)
+	post, err := h.postService.CreateFromFile(title, subTitle, image, tags, content, userID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}

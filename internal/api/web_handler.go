@@ -43,7 +43,7 @@ func (h *WebHandler) RenderIndexPage(c echo.Context) error {
 
 	posts, err := h.postService.List(page, limit)
 	if err != nil {
-		// In a real app, you'd want to log this error
+		log.Printf("Error fetching posts: %v", err)
 		return c.String(http.StatusInternalServerError, "Could not fetch posts")
 	}
 
@@ -80,12 +80,12 @@ func (h *WebHandler) RenderPostPage(c echo.Context) error {
 	// renderer := html.NewRenderer(html.RendererOptions{Flags: html.CommonFlags})
 	// htmlContent = markdown.ToHTML([]byte(mdContent), p, renderer)
 	
-	log.Printf("web handler ", c.Get(middleware.UserContextKey))
+	// log.Printf("web handler ", c.Get(middleware.UserContextKey))
 	
 	return c.Render(http.StatusOK, "post.html", map[string]interface{}{
 		"User":    c.Get(middleware.UserContextKey),
 		"Context": c,
-		"Title":   post.Title,
+		"Post":    post,
 		"Content": template.HTML(htmlContent), // Use template.HTML to prevent escaping
 	})
 }

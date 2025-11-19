@@ -9,11 +9,11 @@ import (
 )
 
 type PostService interface {
-	Create(title, content string, userID int) (*model.Post, error)
+	Create(title, subTitle, image string, tags []string, content string, userID int) (*model.Post, error)
 	GetByID(id int) (*model.Post, string, error)
 	List(page, limit int) ([]*model.Post, error)
-	CreateFromFile(title string, content []byte, userID int) (*model.Post, error)
-	Update(postID int, title, content string, userID int) (*model.Post, error)
+	CreateFromFile(title, subTitle, image string, tags []string, content []byte, userID int) (*model.Post, error)
+	Update(postID int, title, subTitle, image string, tags []string, content string, userID int) (*model.Post, error)
 	Search(query string, page, limit int) ([]*model.Post, error)
 }
 
@@ -26,12 +26,15 @@ func NewPostService(ps store.PostStore, fs storage.FileStorage) PostService {
 	return &postService{postStore: ps, fileStorage: fs}
 }
 
-func (s *postService) Create(title, content string, userID int) (*model.Post, error) {
+func (s *postService) Create(title, subTitle, image string, tags []string, content string, userID int) (*model.Post, error) {
 	// Create the post metadata in the database first to get an ID.
 	post := &model.Post{
-		UserID:  userID,
-		Title:   title,
-		Version: 1,
+		UserID:   userID,
+		Title:    title,
+		SubTitle: subTitle,
+		Image:    image,
+		Tags:     tags,
+		Version:  1,
 	}
 
 	createdPost, err := s.postStore.Create(post)
@@ -54,12 +57,15 @@ func (s *postService) Create(title, content string, userID int) (*model.Post, er
 	return s.postStore.Update(createdPost)
 }
 
-func (s *postService) CreateFromFile(title string, content []byte, userID int) (*model.Post, error) {
+func (s *postService) CreateFromFile(title, subTitle, image string, tags []string, content []byte, userID int) (*model.Post, error) {
 	// Create the post metadata in the database first to get an ID.
 	post := &model.Post{
-		UserID:  userID,
-		Title:   title,
-		Version: 1,
+		UserID:   userID,
+		Title:    title,
+		SubTitle: subTitle,
+		Image:    image,
+		Tags:     tags,
+		Version:  1,
 	}
 
 	createdPost, err := s.postStore.Create(post)
@@ -106,7 +112,7 @@ func (s *postService) Search(query string, page, limit int) ([]*model.Post, erro
 	return s.postStore.Search(query, limit, offset)
 }
 
-func (s *postService) Update(postID int, title, content string, userID int) (*model.Post, error) {
+func (s *postService) Update(postID int, title, subTitle, image string, tags []string, content string, userID int) (*model.Post, error) {
 	// TODO: This entire operation should be in a single database transaction.
 
 	// 1. Get the current post from the database.
@@ -143,6 +149,9 @@ func (s *postService) Update(postID int, title, content string, userID int) (*mo
 
 	// 6. Update the post model with new data.
 	post.Title = title
+	post.SubTitle = subTitle
+	post.Image = image
+	post.Tags = tags
 	post.Version = newVersion
 	post.ContentPath = newContentPath
 
