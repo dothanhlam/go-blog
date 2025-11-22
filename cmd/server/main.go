@@ -64,9 +64,9 @@ func main() {
 	e.Renderer = web.NewTemplateRenderer()
 	e.GET("/posts/:id", webHandler.RenderPostPage)
 	e.GET("/", webHandler.RenderIndexPage)
-	e.GET("/login", webHandler.RenderLoginPage)
-	e.POST("/login", webHandler.HandleLogin)
-	e.GET("/logout", webHandler.HandleLogout)
+	//e.GET("/login", webHandler.RenderLoginPage)
+	//e.POST("/login", webHandler.HandleLogin)
+	//e.GET("/logout", webHandler.HandleLogout)
 
 	// Register routes
 	api.RegisterRoutes(e, userService, postService, cfg)
