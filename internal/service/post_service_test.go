@@ -88,19 +88,29 @@ func TestPostService_Create(t *testing.T) {
 	title := "Test Title"
 	content := "Test Content"
 
+	subTitle := "Test SubTitle"
+	image := "test_image.jpg"
+	tags := []string{"tag1", "tag2"}
+
 	// The initial post model passed to Create
 	initialPost := &model.Post{
-		UserID:  userID,
-		Title:   title,
-		Version: 1,
+		UserID:   userID,
+		Title:    title,
+		SubTitle: subTitle,
+		Image:    image,
+		Tags:     tags,
+		Version:  1,
 	}
 
 	// The post model returned by the first Create call, now with an ID
 	createdPostWithID := &model.Post{
-		ID:      1,
-		UserID:  userID,
-		Title:   title,
-		Version: 1,
+		ID:       1,
+		UserID:   userID,
+		Title:    title,
+		SubTitle: subTitle,
+		Image:    image,
+		Tags:     tags,
+		Version:  1,
 	}
 
 	contentPath := fmt.Sprintf("user_%d/post_%d_v%d.md", userID, createdPostWithID.ID, createdPostWithID.Version)
@@ -110,6 +120,9 @@ func TestPostService_Create(t *testing.T) {
 		ID:          1,
 		UserID:      userID,
 		Title:       title,
+		SubTitle:    subTitle,
+		Image:       image,
+		Tags:        tags,
 		Version:     1,
 		ContentPath: contentPath,
 	}
@@ -120,7 +133,8 @@ func TestPostService_Create(t *testing.T) {
 	mockPostStore.On("Update", finalPost).Return(finalPost, nil).Once()
 
 	// Execute the service method
-	post, err := postSvc.Create(title, content, userID)
+	// Execute the service method
+	post, err := postSvc.Create(title, subTitle, image, tags, content, userID)
 
 	// Assertions
 	assert.NoError(t, err)
@@ -187,6 +201,9 @@ func TestPostService_Update(t *testing.T) {
 	}
 
 	newTitle := "Updated Title"
+	newSubTitle := "Updated SubTitle"
+	newImage := "updated_image.jpg"
+	newTags := []string{"updated_tag1", "updated_tag2"}
 	newContent := "Updated Content"
 	newVersion := 2
 	newContentPath := fmt.Sprintf("user_%d/post_%d_v%d.md", userID, postID, newVersion)
@@ -198,12 +215,16 @@ func TestPostService_Update(t *testing.T) {
 	mockPostStore.On("Update", mock.AnythingOfType("*model.Post")).Return(currentPost, nil).Once()
 
 	// Execute
-	updatedPost, err := postSvc.Update(postID, newTitle, newContent, userID)
+	// Execute
+	updatedPost, err := postSvc.Update(postID, newTitle, newSubTitle, newImage, newTags, newContent, userID)
 
 	// Assertions
 	assert.NoError(t, err)
 	assert.NotNil(t, updatedPost)
 	assert.Equal(t, newTitle, updatedPost.Title)
+	assert.Equal(t, newSubTitle, updatedPost.SubTitle)
+	assert.Equal(t, newImage, updatedPost.Image)
+	assert.Equal(t, newTags, updatedPost.Tags)
 	assert.Equal(t, newVersion, updatedPost.Version)
 	assert.Equal(t, newContentPath, updatedPost.ContentPath)
 
