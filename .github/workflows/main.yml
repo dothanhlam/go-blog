@@ -42,8 +42,8 @@ jobs:
           curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
           sudo mv migrate /usr/local/bin/
 
-      - name: Run database migrations
-        run: migrate -path migrations -database "postgres://user:password@localhost:5432/blog?sslmode=disable" up
+      #- name: Run database migrations
+      #  run: migrate -path migrations -database "postgres://user:password@localhost:5432/blog?sslmode=disable" up
 
       - name: Run tests
         run: go test -v ./...
